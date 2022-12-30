@@ -1,10 +1,10 @@
 //
-// SystemKit.h
-// SystemKit
+// SystemKitReborn.h
+// SystemKitReborn
 //
 // The MIT License
 //
-// Copyright (C) 2014-2017  beltex <https://github.com/beltex>
+// Copyright (C) 2022 BatemaDevelopment <https://github.com/lukas-batema>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-//! Project version number for SystemKit.
-FOUNDATION_EXPORT double SystemKitVersionNumber;
+//! Project version number for SystemKitReborn.
+FOUNDATION_EXPORT double SystemKitRebornVersionNumber;
 
-//! Project version string for SystemKit.
-FOUNDATION_EXPORT const unsigned char SystemKitVersionString[];
+//! Project version string for SystemKitReborn.
+FOUNDATION_EXPORT const unsigned char SystemKitRebornVersionString[];
 
 // In this header, you should import all the public headers of your framework
-// using statements like #import <SystemKit/PublicHeader.h>
+// using statements like #import <SystemKitReborn/PublicHeader.h>

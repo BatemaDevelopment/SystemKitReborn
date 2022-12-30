@@ -1,10 +1,10 @@
 //
-// SystemKitTests.swift
-// SystemKit
+// SystemKitRebornTests.swift
+// SystemKitReborn
 //
 // The MIT License
 //
-// Copyright (C) 2014-2017  beltex <https://github.com/beltex>
+// Copyright (C) 2022 BatemaDevelopment <https://github.com/lukas-batema>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,9 @@
 
 import Cocoa
 import XCTest
-import SystemKit
+import SystemKitReborn
 
-class SystemKitTests: XCTestCase {
+class SystemKitRebornTests: XCTestCase {
     
     override func setUp() {
         super.setUp()

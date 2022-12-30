@@ -1,10 +1,10 @@
 //
 // main.swift
-// SystemKit
+// SystemKitReborn
 //
 // The MIT License
 //
-// Copyright (C) 2014-2017  beltex <https://github.com/beltex>
+// Copyright (C) 2022 BatemaDevelopment <https://github.com/lukas-batema>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import SystemKit
+import SystemKitReborn
 
 print("// MACHINE STATUS")
 
