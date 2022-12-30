@@ -65,6 +65,7 @@
 		4C6D98B71A3A8FF500BA2B36 /* IOReturn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOReturn.swift; sourceTree = "<group>"; };
 		5D7A193C2868E03100A6009C /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		9F0380BC295E5E31006FE803 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		9F0380C3295E6B63006FE803 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9FA360EC295CB5BA00EEFE08 /* SystemKitReborn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemKitReborn.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -106,6 +107,7 @@
 		4C543D121A08396700C5D9B2 = {
 			isa = PBXGroup;
 			children = (
+				9F0380C3295E6B63006FE803 /* README.md */,
 				9F0380BC295E5E31006FE803 /* .gitignore */,
 				4C543D1E1A08396700C5D9B2 /* SystemKitReborn */,
 				4C543D2B1A08396700C5D9B2 /* SystemKitRebornTests */,

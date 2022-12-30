@@ -119,10 +119,17 @@ public struct Battery {
                   IOServiceNameMatching(Battery.IOSERVICE_BATTERY))
         
         if (service == 0) {
+            // Removed as the user does not need to know if the battery isn't there
+            // when the programme cannot calculate battery stats, because the battery
+            // is not there, as the user should know already if the battery is
+            // non-existent... *phew, try saying that 10 times fast*.
+            
+            /*
             #if DEBUG
                 print("ERROR - \(#file):\(#function) - " +
                         "\(Battery.IOSERVICE_BATTERY) service not found")
             #endif
+            */
             return kIOReturnNotFound
         }
         
