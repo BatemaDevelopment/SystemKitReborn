@@ -184,4 +184,3 @@ private func iokit_common_err(_ code: UInt32) -> kern_return_t {
     // Overflow otherwise
     return Int32(bitPattern: SYS_IOKIT | SUB_IOKIT_COMMON | code)
 }
-

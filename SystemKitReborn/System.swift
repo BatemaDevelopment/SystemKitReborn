@@ -50,32 +50,32 @@ private let PROCESSOR_SET_LOAD_INFO_COUNT : mach_msg_type_number_t =
 
 
 public struct System {
-    
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC PROPERTIES
     //--------------------------------------------------------------------------
-    
-    
+
+
     /**
     System page size.
-    
+
     - Can check this via pagesize shell command as well
     - C lib function getpagesize()
     - host_page_size()
-    
+
     TODO: This should be static right?
     */
     public static let PAGE_SIZE = vm_kernel_page_size
-    
-    
+
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC ENUMS
     //--------------------------------------------------------------------------
-    
-    
+
+
     /**
     Unit options for method data returns.
-    
+
     TODO: Pages?
     */
     public enum Unit : Double {
@@ -85,18 +85,18 @@ public struct System {
         case megabyte = 1048576
         case gigabyte = 1073741824
     }
-    
-    
+
+
     /// Options for loadAverage()
     public enum LOAD_AVG {
         /// 5, 30, 60 second samples
         case short
-        
+
         /// 1, 5, 15 minute samples
         case long
     }
-    
-    
+
+
     /// For thermalLevel()
     public enum ThermalLevel: String {
         // Comments via <IOKit/pwr_mgt/IOPM.h>
@@ -117,25 +117,25 @@ public struct System {
     //--------------------------------------------------------------------------
     // MARK: PRIVATE PROPERTIES
     //--------------------------------------------------------------------------
-    
+
 
     fileprivate static let machHost = mach_host_self()
     fileprivate var loadPrevious = host_cpu_load_info()
-    
-    
+
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC INITIALIZERS
     //--------------------------------------------------------------------------
-    
-    
+
+
     public init() { }
-    
-    
+
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC METHODS
     //--------------------------------------------------------------------------
-    
-    
+
+
     /**
     Get CPU usage (system, user, idle, nice). Determined by the delta between
     the current and last call. Thus, first call will always be inaccurate.
@@ -145,32 +145,32 @@ public struct System {
                                         idle   : Double,
                                         nice   : Double) {
         let load = System.hostCPULoadInfo()
-        
+
         let userDiff = Double(load.cpu_ticks.0 - loadPrevious.cpu_ticks.0)
         let sysDiff  = Double(load.cpu_ticks.1 - loadPrevious.cpu_ticks.1)
         let idleDiff = Double(load.cpu_ticks.2 - loadPrevious.cpu_ticks.2)
         let niceDiff = Double(load.cpu_ticks.3 - loadPrevious.cpu_ticks.3)
-        
+
         let totalTicks = sysDiff + userDiff + niceDiff + idleDiff
-        
+
         let sys  = sysDiff  / totalTicks * 100.0
         let user = userDiff / totalTicks * 100.0
         let idle = idleDiff / totalTicks * 100.0
         let nice = niceDiff / totalTicks * 100.0
-        
+
         loadPrevious = load
-        
+
         // TODO: 2 decimal places
         // TODO: Check that total is 100%
         return (sys, user, idle, nice)
     }
-    
-    
+
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC STATIC METHODS
     //--------------------------------------------------------------------------
-    
-    
+
+
     /// Get the model name of this machine. Same as "sysctl hw.model"
     public static func modelName() -> String {
         let name: String
@@ -255,31 +255,31 @@ public struct System {
     public static func physicalCores() -> Int {
         return Int(System.hostBasicInfo().physical_cpu)
     }
-    
-    
+
+
     /**
     Number of logical cores on this machine. Will be equal to physicalCores()
     unless it has hyper-threading, in which case it will be double.
-    
+
     https://en.wikipedia.org/wiki/Hyper-threading
     */
     public static func logicalCores() -> Int {
         return Int(System.hostBasicInfo().logical_cpu)
     }
-    
-    
+
+
     /**
     System load average at 3 intervals.
-    
+
     "Measures the average number of threads in the run queue."
-    
+
     - via hostinfo manual page
-    
+
     https://en.wikipedia.org/wiki/Load_(computing)
     */
     public static func loadAverage(_ type: LOAD_AVG = .long) -> [Double] {
         var avg = [Double](repeating: 0, count: 3)
-        
+
         switch type {
             case .short:
                 let result = System.hostLoadInfo().avenrun
@@ -289,14 +289,14 @@ public struct System {
             case .long:
                 getloadavg(&avg, 3)
         }
-        
+
         return avg
     }
-    
-    
+
+
     /**
     System mach factor at 3 intervals.
-    
+
     "A variant of the load average which measures the processing resources
     available to a new thread. Mach factor is based on the number of CPUs
     divided by (1 + the number of runnablethreads) or the number of CPUs minus
@@ -304,31 +304,31 @@ public struct System {
     than the number of CPUs. The closer the Mach factor value is to zero, the
     higher the load. On an idle system with a fixed number of active processors,
     the mach factor will be equal to the number of CPUs."
-    
+
     - via hostinfo manual page
     */
     public static func machFactor() -> [Double] {
         let result = System.hostLoadInfo().mach_factor
-        
+
         return [Double(result.0) / Double(LOAD_SCALE),
                 Double(result.1) / Double(LOAD_SCALE),
                 Double(result.2) / Double(LOAD_SCALE)]
     }
-    
+
 
     /// Total number of processes & threads
     public static func processCounts() -> (processCount: Int, threadCount: Int) {
         let data = System.processorLoadInfo()
         return (Int(data.task_count), Int(data.thread_count))
     }
-    
-    
+
+
     /// Size of physical memory on this machine
     public static func physicalMemory(_ unit: Unit = .gigabyte) -> Double {
         return Double(System.hostBasicInfo().max_mem) / unit.rawValue
     }
-    
-    
+
+
     /**
     System memory usage (free, active, inactive, wired, compressed).
     */
@@ -338,7 +338,7 @@ public struct System {
                                          wired      : Double,
                                          compressed : Double) {
         let stats = System.VMStatistics64()
-        
+
         let free     = Double(stats.free_count) * Double(PAGE_SIZE)
                                                         / Unit.gigabyte.rawValue
         let active   = Double(stats.active_count) * Double(PAGE_SIZE)
@@ -347,14 +347,14 @@ public struct System {
                                                         / Unit.gigabyte.rawValue
         let wired    = Double(stats.wire_count) * Double(PAGE_SIZE)
                                                         / Unit.gigabyte.rawValue
-        
+
         // Result of the compression. This is what you see in Activity Monitor
         let compressed = Double(stats.compressor_page_count) * Double(PAGE_SIZE)
                                                         / Unit.gigabyte.rawValue
-        
+
         return (free, active, inactive, wired, compressed)
     }
-    
+
 
     /// How long has the system been up?
     public static func uptime() -> (days: Int, hrs: Int, mins: Int, secs: Int) {
@@ -509,69 +509,45 @@ public struct System {
     //--------------------------------------------------------------------------
     // MARK: PRIVATE METHODS
     //--------------------------------------------------------------------------
-    
-    
+
+
     fileprivate static func hostBasicInfo() -> host_basic_info {
         // TODO: Why is host_basic_info.max_mem val different from sysctl?
-        
+
         var size     = HOST_BASIC_INFO_COUNT
         let hostInfo = host_basic_info_t.allocate(capacity: 1)
-        
+
         let result = hostInfo.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
             host_info(machHost, HOST_BASIC_INFO, $0, &size)
         }
-  
+
         let data = hostInfo.move()
         hostInfo.deallocate()
-        
+
         #if DEBUG
             if result != KERN_SUCCESS {
                 print("ERROR - \(#file):\(#function) - kern_result_t = "
                         + "\(result)")
             }
         #endif
-        
+
         return data
     }
 
-    
+
     fileprivate static func hostLoadInfo() -> host_load_info {
         var size     = HOST_LOAD_INFO_COUNT
         let hostInfo = host_load_info_t.allocate(capacity: 1)
-        
+
         let result = hostInfo.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
             host_statistics(machHost, HOST_LOAD_INFO,
                                       $0,
                                       &size)
         }
-        
+
         let data = hostInfo.move()
         hostInfo.deallocate()
-        
-        #if DEBUG
-            if result != KERN_SUCCESS {
-                print("ERROR - \(#file):\(#function) - kern_result_t = "
-                        + "\(result)")
-            }
-        #endif
-        
-        return data
-    }
-    
-    
-    fileprivate static func hostCPULoadInfo() -> host_cpu_load_info {
-        var size     = HOST_CPU_LOAD_INFO_COUNT
-        let hostInfo = host_cpu_load_info_t.allocate(capacity: 1)
-        
-        let result = hostInfo.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
-            host_statistics(machHost, HOST_CPU_LOAD_INFO,
-                                      $0,
-                                      &size)
-        }
-        
-        let data = hostInfo.move()
-        hostInfo.deallocate()
-        
+
         #if DEBUG
             if result != KERN_SUCCESS {
                 print("ERROR - \(#file):\(#function) - kern_result_t = "
@@ -581,14 +557,38 @@ public struct System {
 
         return data
     }
-    
-    
+
+
+    fileprivate static func hostCPULoadInfo() -> host_cpu_load_info {
+        var size     = HOST_CPU_LOAD_INFO_COUNT
+        let hostInfo = host_cpu_load_info_t.allocate(capacity: 1)
+
+        let result = hostInfo.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
+            host_statistics(machHost, HOST_CPU_LOAD_INFO,
+                                      $0,
+                                      &size)
+        }
+
+        let data = hostInfo.move()
+        hostInfo.deallocate()
+
+        #if DEBUG
+            if result != KERN_SUCCESS {
+                print("ERROR - \(#file):\(#function) - kern_result_t = "
+                        + "\(result)")
+            }
+        #endif
+
+        return data
+    }
+
+
     fileprivate static func processorLoadInfo() -> processor_set_load_info {
         // NOTE: Duplicate load average and mach factor here
-        
+
         var pset   = processor_set_name_t()
         var result = processor_set_default(machHost, &pset)
-        
+
         if result != KERN_SUCCESS {
             #if DEBUG
                 print("ERROR - \(#file):\(#function) - kern_result_t = "
@@ -598,10 +598,10 @@ public struct System {
             return processor_set_load_info()
         }
 
-        
+
         var count    = PROCESSOR_SET_LOAD_INFO_COUNT
         let info_out = processor_set_load_info_t.allocate(capacity: 1)
-        
+
         result = info_out.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
             processor_set_statistics(pset,
                                      PROCESSOR_SET_LOAD_INFO,
@@ -624,22 +624,22 @@ public struct System {
 
         let data = info_out.move()
         info_out.deallocate()
-        
+
         return data
     }
-    
-    
+
+
     /**
     64-bit virtual memory statistics. This should apply to all Mac's that run
     10.9 and above. For iOS, iPhone 5S, iPad Air & iPad Mini 2 and on.
-    
+
     Swift runs on 10.9 and above, and 10.9 is x86_64 only. On iOS though its 7
     and above, with both ARM & ARM64.
     */
     fileprivate static func VMStatistics64() -> vm_statistics64 {
         var size     = HOST_VM_INFO64_COUNT
         let hostInfo = vm_statistics64_t.allocate(capacity: 1)
-        
+
         let result = hostInfo.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
             host_statistics64(machHost,
                               HOST_VM_INFO64,
@@ -649,14 +649,14 @@ public struct System {
 
         let data = hostInfo.move()
         hostInfo.deallocate()
-        
+
         #if DEBUG
             if result != KERN_SUCCESS {
                 print("ERROR - \(#file):\(#function) - kern_result_t = "
                     + "\(result)")
             }
         #endif
-        
+
         return data
     }
 }

@@ -62,23 +62,23 @@ public struct ProcessInfo {
 
 /// Process API
 public struct ProcessAPI {
-    
+
     //--------------------------------------------------------------------------
     // MARK: PRIVATE PROPERTIES
     //--------------------------------------------------------------------------
 
     fileprivate static let machHost = mach_host_self()
-    
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC INITIALIZERS
     //--------------------------------------------------------------------------
-    
+
     public init() { }
-    
+
     //--------------------------------------------------------------------------
     // MARK: PUBLIC METHODS
     //--------------------------------------------------------------------------
-    
+
     /// Return list of currently running processes
     public static func list() -> [ProcessInfo] {
         var list                                = [ProcessInfo]()
@@ -94,13 +94,13 @@ public struct ProcessAPI {
             #endif
             return list
         }
-        
-        
+
+
         // For each CPU set
         for i in 0..<Int(pcnt) {
             var pset: processor_set_name_t = 0
             result = host_processor_set_priv(machHost, psets![i], &pset)
-            
+
             if result != KERN_SUCCESS {
                 #if DEBUG
                     print("ERROR - \(#file):\(#function) - CPU set " +
@@ -108,13 +108,13 @@ public struct ProcessAPI {
                 #endif
                 continue
             }
-            
-            
+
+
             // Get port to each task
             var tasks: task_array_t?                = task_array_t.allocate(capacity: 1)
             var taskCount: mach_msg_type_number_t   = 0
             result = processor_set_tasks(pset, &tasks, &taskCount)
-            
+
             if result != KERN_SUCCESS {
                 #if DEBUG
                     print("ERROR - \(#file):\(#function) - failed to "
@@ -123,28 +123,28 @@ public struct ProcessAPI {
                 continue
             }
 
-            
+
             // For each task
             for x in 0 ..< Int(taskCount) {
                 let task       = tasks![x]
                 var pid: pid_t = 0
-                
+
                 pid_for_task(task, &pid)
-                
-                
+
+
                 // BSD layer only stuff
                 var kinfo = kinfo_proc()
                 var size  = MemoryLayout<kinfo_proc>.stride
                 var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
-                
+
                 // TODO: Error check
                 sysctl(&mib, u_int(mib.count), &kinfo, &size, nil, 0)
 
                 let command = withUnsafePointer(to: &kinfo.kp_proc.p_comm) {
                     String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self))
                 }
-                
-                
+
+
                 list.append(ProcessInfo(pid    : Int(pid),
                                         ppid   : Int(kinfo.kp_eproc.e_ppid),
                                         pgid   : Int(kinfo.kp_eproc.e_pgid),
@@ -152,35 +152,35 @@ public struct ProcessAPI {
                                         command: command,
                                         arch   : arch(pid),
                                         status : Int32(kinfo.kp_proc.p_stat)))
-                
+
                 mach_port_deallocate(mach_task_self_, task)
             }
-            
+
             // TODO: Missing deallocate for tasks
             mach_port_deallocate(mach_task_self_, pset)
             mach_port_deallocate(mach_task_self_, psets![i])
-            
+
             // TODO: Why do dealloc calls on tasks and psets fail?
         }
-        
+
         return list
     }
 
     //--------------------------------------------------------------------------
     // MARK: PRIVATE METHODS
     //--------------------------------------------------------------------------
-    
+
     /// What architecture was this process compiled for?
     fileprivate static func arch(_ pid: pid_t) -> cpu_type_t {
         var arch = CPU_TYPE_ANY
-        
+
         // sysctl.proc_cputype not documented anywhere. Doesn't even show up
         // when running 'sysctl -A'. Have to call sysctlnametomib() before hand
         // due to this
         // TODO: Call sysctlnametomib() only once
         var mib       = [Int32](repeating: 0, count: Int(CTL_MAXNAME))
         var mibLength = size_t(CTL_MAXNAME)
-        
+
         var result = sysctlnametomib("sysctl.proc_cputype", &mib, &mibLength)
 
         if result != 0 {
@@ -191,8 +191,8 @@ public struct ProcessAPI {
 
             return arch
         }
-        
-        
+
+
         mib[Int(mibLength)] = pid
         var size = MemoryLayout<cpu_type_t>.size
 
