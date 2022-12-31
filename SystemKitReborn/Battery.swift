@@ -1,10 +1,10 @@
 //
 // Battery.swift
-// SystemKit
+// SystemKitReborn
 //
 // The MIT License
 //
-// Copyright (C) 2014-2017  beltex <https://github.com/beltex>
+// Copyright (C) 2022 BatemaDevelopment <https://github.com/lukas-batema>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -119,10 +119,17 @@ public struct Battery {
                   IOServiceNameMatching(Battery.IOSERVICE_BATTERY))
         
         if (service == 0) {
+            // Removed as the user does not need to know if the battery isn't there
+            // when the programme cannot calculate battery stats, because the battery
+            // is not there, as the user should know already if the battery is
+            // non-existent... *phew, try saying that 10 times fast*.
+            
+            /*
             #if DEBUG
                 print("ERROR - \(#file):\(#function) - " +
                         "\(Battery.IOSERVICE_BATTERY) service not found")
             #endif
+            */
             return kIOReturnNotFound
         }
         
